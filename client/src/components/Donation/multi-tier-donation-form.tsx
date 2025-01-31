@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '@freecodecamp/react-bootstrap';
 import {
   Tabs,
   TabsContent,
   TabsTrigger,
   TabsList,
   Col,
-  Row
+  Row,
+  Spacer
 } from '@freecodecamp/ui';
+import { useFeature } from '@growthbook/growthbook-react';
 import { useTranslation } from 'react-i18next';
-import { Spacer } from '../helpers';
+
 import {
   PaymentContext,
   subscriptionAmounts,
   defaultTierAmount,
   type DonationAmount
 } from '../../../../shared/config/donation-settings'; // You can further extract these into separate components and import them
-import { Themes } from '../settings/theme';
+import callGA from '../../analytics/call-ga';
+import { LocalStorageThemes } from '../../redux/types';
 import { formattedAmountLabel, convertToTimeContributed } from './utils';
 import DonateForm from './donate-form';
 
@@ -25,20 +27,40 @@ type MultiTierDonationFormProps = {
   handleProcessing?: () => void;
   paymentContext: PaymentContext;
   isMinimalForm?: boolean;
-  defaultTheme?: Themes;
+  defaultTheme?: LocalStorageThemes;
+  isAnimationEnabled?: boolean;
 };
 function SelectionTabs({
   donationAmount,
   setDonationAmount,
-  setShowDonateForm
+  setShowDonateForm,
+  isAnimationEnabled
 }: {
   donationAmount: DonationAmount;
   setDonationAmount: React.Dispatch<React.SetStateAction<DonationAmount>>;
   setShowDonateForm: React.Dispatch<React.SetStateAction<boolean>>;
+  isAnimationEnabled?: boolean;
 }) {
   const { t } = useTranslation();
   const switchTab = (value: string): void => {
     setDonationAmount(Number(value) as DonationAmount);
+  };
+  useFeature('aa-test-in-component');
+  const handleAmountConfirmationClick = () => {
+    callGA({
+      event: 'donation_related',
+      action: `Amount Confirmation Clicked`
+    });
+    setShowDonateForm(true);
+  };
+
+  const selectAmountTabClick = (value: DonationAmount) => {
+    callGA({
+      event: 'donation_related',
+      action: `Select Amount Tab Clicked`,
+      amount: value
+    });
+    setDonationAmount(value);
   };
 
   return (
@@ -52,7 +74,7 @@ function SelectionTabs({
             usd: formattedAmountLabel(donationAmount)
           })}
         </b>
-        <Spacer size='small' />
+        <Spacer size='xs' />
         <Tabs
           className={'donate-btn-group'}
           defaultValue={donationAmount.toString()}
@@ -63,13 +85,13 @@ function SelectionTabs({
               <TabsTrigger
                 key={value}
                 value={value.toString()}
-                onClick={() => setDonationAmount(value)}
+                onClick={() => selectAmountTabClick(value)}
               >
                 ${formattedAmountLabel(value)}
               </TabsTrigger>
             ))}
           </TabsList>
-          <Spacer size='small' />
+          <Spacer size='xs' />
           {subscriptionAmounts.map(value => {
             const usd = formattedAmountLabel(donationAmount);
             const hours = convertToTimeContributed(donationAmount);
@@ -89,17 +111,16 @@ function SelectionTabs({
             );
           })}
         </Tabs>
-        <Button
-          block={true}
-          bsStyle='primary'
+        <button
           className='text-center confirm-donation-btn donate-btn-group'
           type='submit'
-          data-cy='donation-tier-selection-button'
-          onClick={() => setShowDonateForm(true)}
+          onClick={handleAmountConfirmationClick}
         >
-          {t('buttons.donate')}
-        </Button>
-        <Spacer size='medium' />
+          {isAnimationEnabled
+            ? t('buttons.confirm-amount')
+            : t('buttons.donate')}
+        </button>
+        <Spacer size='m' />
       </Col>
     </Row>
   );
@@ -109,24 +130,33 @@ function DonationFormRow({
   handleProcessing,
   isMinimalForm,
   setShowDonateForm,
-  donationAmount
+  donationAmount,
+  paymentContext
 }: {
   handleProcessing?: () => void;
   isMinimalForm?: boolean;
   setShowDonateForm: React.Dispatch<React.SetStateAction<boolean>>;
   donationAmount: DonationAmount;
+  paymentContext: PaymentContext;
 }) {
+  const editAmountClick = () => {
+    callGA({
+      event: 'donation_related',
+      action: `Edit Amount Clicked`
+    });
+    setShowDonateForm(false);
+  };
   return (
     <Row>
       <Col xs={12}>
         <DonateForm
           handleProcessing={handleProcessing}
           isMinimalForm={isMinimalForm}
-          paymentContext={PaymentContext.Modal}
-          editAmount={() => setShowDonateForm(false)}
+          paymentContext={paymentContext}
+          editAmount={editAmountClick}
           selectedDonationAmount={donationAmount}
         />
-        <Spacer size='medium' />
+        <Spacer size='m' />
       </Col>
     </Row>
   );
@@ -135,7 +165,9 @@ function DonationFormRow({
 const MultiTierDonationForm: React.FC<MultiTierDonationFormProps> = ({
   handleProcessing,
   setShowHeaderAndFooter,
-  isMinimalForm
+  isMinimalForm,
+  paymentContext,
+  isAnimationEnabled
 }) => {
   const [donationAmount, setDonationAmount] = useState(defaultTierAmount);
 
@@ -152,6 +184,7 @@ const MultiTierDonationForm: React.FC<MultiTierDonationFormProps> = ({
           donationAmount={donationAmount}
           setDonationAmount={setDonationAmount}
           setShowDonateForm={setShowDonateForm}
+          isAnimationEnabled={isAnimationEnabled}
         />
       </div>
       <div {...(!showDonateForm && { className: 'hide' })}>
@@ -160,6 +193,7 @@ const MultiTierDonationForm: React.FC<MultiTierDonationFormProps> = ({
           handleProcessing={handleProcessing}
           setShowDonateForm={setShowDonateForm}
           isMinimalForm={isMinimalForm}
+          paymentContext={paymentContext}
         />
       </div>
     </>

@@ -1,4 +1,3 @@
-import { Button } from '@freecodecamp/react-bootstrap';
 import React, { useEffect, useRef } from 'react';
 import Helmet from 'react-helmet';
 import { useTranslation, Trans } from 'react-i18next';
@@ -6,11 +5,11 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { Dispatch } from 'redux';
 import { createSelector } from 'reselect';
-import { Container, Col, Row } from '@freecodecamp/ui';
+import { Container, Col, Row, Button, Spacer } from '@freecodecamp/ui';
 
 import IntroDescription from '../components/Intro/components/intro-description';
 import createRedirect from '../components/create-redirect';
-import { Spacer, Loader, Link } from '../components/helpers';
+import { Loader, Link } from '../components/helpers';
 import { apiLocation } from '../../config/env.json';
 
 import { acceptTerms } from '../redux/actions';
@@ -66,26 +65,24 @@ function EmailListOptIn({
           <Col md={4} mdOffset={2} sm={5} smOffset={1} xs={12}>
             <Button
               block={true}
-              bsSize='lg'
-              bsStyle='primary'
-              className='big-cta-btn'
+              size='large'
+              variant='primary'
               onClick={() => acceptTerms(true)}
             >
               {t('buttons.yes-please')}
             </Button>
-            <Spacer size='small' />
+            <Spacer size='xs' />
           </Col>
           <Col md={4} sm={5} xs={12}>
             <Button
               block={true}
-              bsSize='lg'
-              bsStyle='primary'
-              className='big-cta-btn'
+              size='large'
+              variant='primary'
               onClick={() => acceptTerms(false)}
             >
               {t('buttons.no-thanks')}
             </Button>
-            <Spacer size='small' />
+            <Spacer size='xs' />
           </Col>
         </Row>
       </Container>
@@ -93,17 +90,16 @@ function EmailListOptIn({
   } else {
     return (
       <Col md={8} mdOffset={2} sm={10} smOffset={1} xs={12}>
-        <Spacer size='small' />
+        <Spacer size='xs' />
         <Button
           block={true}
-          bsSize='lg'
-          bsStyle='primary'
-          className='big-cta-btn'
+          size='large'
+          variant='primary'
           href={`${apiLocation}/signin`}
         >
           {t('buttons.sign-up-email-list')}
         </Button>
-        <Spacer size='small' />
+        <Spacer size='xs' />
       </Col>
     );
   }
@@ -137,9 +133,9 @@ function AcceptPrivacyTerms({
         {isSignedIn && completedChallengeCount < 1 ? (
           <Row>
             <Col md={8} mdOffset={2} sm={10} smOffset={1} xs={12}>
-              <Spacer size='large' />
+              <Spacer size='l' />
               <h1 className='text-center'>{t('misc.brand-new-account')}</h1>
-              <Spacer size='small' />
+              <Spacer size='xs' />
               <p>
                 <Trans i18nKey='misc.duplicate-account-warning'>
                   <Link className='inline' to='/settings#danger-zone' />
@@ -152,16 +148,16 @@ function AcceptPrivacyTerms({
         )}
         <Row>
           <Col md={8} mdOffset={2} sm={10} smOffset={1} xs={12}>
-            <Spacer size='small' />
+            <Spacer size='xs' />
             <IntroDescription />
             <hr />
           </Col>
         </Row>
-        <Row className='email-sign-up' data-cy='email-sign-up'>
+        <Row className='email-sign-up'>
           <Col md={8} mdOffset={2} sm={10} smOffset={1} xs={12}>
-            <Spacer size='small' />
+            <Spacer size='xs' />
             <p>{t('misc.email-blast')}</p>
-            <Spacer size='small' />
+            <Spacer size='xs' />
           </Col>
           {showLoading ? (
             <Loader fullScreen={true} />
@@ -169,7 +165,7 @@ function AcceptPrivacyTerms({
             <EmailListOptIn isSignedIn={isSignedIn} acceptTerms={acceptTerms} />
           )}
           <Col xs={12}>
-            <Spacer size='medium' />
+            <Spacer size='m' />
           </Col>
         </Row>
       </Container>
